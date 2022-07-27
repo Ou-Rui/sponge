@@ -5,7 +5,7 @@
     <option name="openedFilesInfos">
       <list>
         <OpenedFileInfo>
-          <option name="caretOffset" value="533" />
+          <option name="caretOffset" value="1753" />
           <option name="fileUrl" value="file://$PROJECT_DIR$/libsponge/byte_stream.cc" />
         </OpenedFileInfo>
         <OpenedFileInfo>
@@ -17,8 +17,12 @@
           <option name="fileUrl" value="file://$PROJECT_DIR$/tests/byte_stream_test_harness.cc" />
         </OpenedFileInfo>
         <OpenedFileInfo>
-          <option name="caretOffset" value="3340" />
+          <option name="caretOffset" value="1156" />
           <option name="fileUrl" value="file://$PROJECT_DIR$/tests/byte_stream_one_write.cc" />
+        </OpenedFileInfo>
+        <OpenedFileInfo>
+          <option name="caretOffset" value="0" />
+          <option name="fileUrl" value="file://$PROJECT_DIR$/tests/CMakeLists.txt" />
         </OpenedFileInfo>
       </list>
     </option>
