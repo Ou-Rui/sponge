@@ -17,19 +17,15 @@ void get_URL(const string &host, const string &path) {
     // (not just one call to read() -- everything) until you reach
     // the "eof" (end of file).
     Address address(host, "http");
-	TCPSocket tcp_socket;
-	tcp_socket.connect(address);
-	string request = "GET " + path + " HTTP/1.1\r\n" +
-			"Host: " + host + "\r\n" +
-			"Connection: close\r\n" +
-			"\r\n";
-	tcp_socket.write(request);
-
-	while (!tcp_socket.eof()) {
-		string s = tcp_socket.read(256);
-		cout << s << endl;
-	}
-	tcp_socket.close();
+    TCPSocket tcp_socket;
+    tcp_socket.connect(address);
+    string request = "GET " + path + " HTTP/1.1\r\n" + "Host: " + host + "\r\n" + "Connection: close\r\n" + "\r\n";
+    tcp_socket.write(request);
+    while (!tcp_socket.eof()) {
+        string s = tcp_socket.read();
+        cout << s;
+    }
+    tcp_socket.close();
 }
 
 int main(int argc, char *argv[]) {
