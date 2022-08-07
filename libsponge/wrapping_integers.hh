@@ -2,7 +2,7 @@
 #define SPONGE_LIBSPONGE_WRAPPING_INTEGERS_HH
 
 #include <cstdint>
-#include <ostream>
+#include <iostream>
 
 //! \brief A 32-bit integer, expressed relative to an arbitrary initial sequence number (ISN)
 //! \note This is used to express TCP sequence numbers (seqno) and acknowledgment numbers (ackno)
@@ -61,5 +61,7 @@ inline WrappingInt32 operator+(WrappingInt32 a, uint32_t b) { return WrappingInt
 //! \brief The point `b` steps before `a`.
 inline WrappingInt32 operator-(WrappingInt32 a, uint32_t b) { return a + -b; }
 //!@}
+
+uint64_t get_dist(uint64_t a, uint64_t b);
 
 #endif  // SPONGE_LIBSPONGE_WRAPPING_INTEGERS_HH

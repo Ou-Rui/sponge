@@ -5,32 +5,8 @@
     <option name="openedFilesInfos">
       <list>
         <OpenedFileInfo>
-          <option name="caretOffset" value="4267" />
-          <option name="fileUrl" value="file://$PROJECT_DIR$/libsponge/stream_reassembler.cc" />
-        </OpenedFileInfo>
-        <OpenedFileInfo>
-          <option name="caretOffset" value="2195" />
-          <option name="fileUrl" value="file://$PROJECT_DIR$/libsponge/byte_stream.cc" />
-        </OpenedFileInfo>
-        <OpenedFileInfo>
-          <option name="caretOffset" value="5083" />
-          <option name="fileUrl" value="file://$PROJECT_DIR$/tests/fsm_stream_reassembler_harness.hh" />
-        </OpenedFileInfo>
-        <OpenedFileInfo>
-          <option name="caretOffset" value="2492" />
-          <option name="fileUrl" value="file://$PROJECT_DIR$/libsponge/stream_reassembler.hh" />
-        </OpenedFileInfo>
-        <OpenedFileInfo>
-          <option name="caretOffset" value="1175" />
-          <option name="fileUrl" value="file://$PROJECT_DIR$/tests/fsm_stream_reassembler_overlapping.cc" />
-        </OpenedFileInfo>
-        <OpenedFileInfo>
-          <option name="caretOffset" value="402" />
-          <option name="fileUrl" value="file://$PROJECT_DIR$/build/out" />
-        </OpenedFileInfo>
-        <OpenedFileInfo>
-          <option name="caretOffset" value="0" />
-          <option name="fileUrl" value="file://$PROJECT_DIR$/README.md" />
+          <option name="caretOffset" value="558" />
+          <option name="fileUrl" value="file://$PROJECT_DIR$/libsponge/wrapping_integers.hh" />
         </OpenedFileInfo>
         <OpenedFileInfo>
           <option name="caretOffset" value="0" />
