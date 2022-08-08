@@ -23,8 +23,16 @@ void TCPReceiver::segment_received(const TCPSegment &seg) {
       cout << "segment_received(): set isn = " << _isn.value() << endl;
     }
   }
-
-
+  if (_isn == nullopt) {
+    cout << "segment_received(): NOT SYN.. return "  << endl;
+    return;
+  }
+  // checkpoint = first_unassembled index
+  uint64_t absolute_seqno = unwrap(seg.header().seqno, _isn.value(), _reassembler.get_first_unassembled());
+  uint64_t str_index = seg.header().syn ? 0 : absolute_seqno - 1;
+  cout << "segment_received(): abs_seqno = " << absolute_seqno
+      << ", str_index = " << str_index << endl;
+  _reassembler.push_substring(seg.payload().copy(), str_index, seg.header().fin);
 }
 
 optional<WrappingInt32> TCPReceiver::ackno() const {
@@ -32,6 +40,10 @@ optional<WrappingInt32> TCPReceiver::ackno() const {
     return nullopt;
   }
   uint64_t index = _reassembler.get_first_unassembled();
+  index++;  // SYN occupy one byte
+  if (stream_out().input_ended()) {
+    index++;    // FIN occupy one byte
+  }
   auto ackno = wrap(index, _isn.value());
   cout << "ackno(): index = " << index << ", ackno = " << ackno << endl;
   return ackno;

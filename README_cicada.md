@@ -2,6 +2,9 @@
 
 ## 更新日志
 
+### 22.08.08
+- Lab2 TCP Receiver Done
+
 ### 22.08.07
 - Lab2 WrappingInt32完成
 
