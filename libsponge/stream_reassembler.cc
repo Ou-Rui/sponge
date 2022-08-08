@@ -13,7 +13,7 @@ void DUMMY_CODE(Targs &&... /* unused */) {}
 using namespace std;
 
 StreamReassembler::StreamReassembler(const size_t capacity) :
-    _map(), _map_size(0), _first_unassembled(0), _first_unaccepted(0), _is_end(false),
+    _map(), _first_unread(0), _first_unassembled(0), _first_unaccepted(0), _is_end(false),
     _output(capacity), _capacity(capacity) {}
 
 //! \details This function accepts a substring (aka a segment) of bytes,
@@ -21,36 +21,36 @@ StreamReassembler::StreamReassembler(const size_t capacity) :
 //! contiguous substrings and writes them into the output stream in order.
 void StreamReassembler::push_substring(const string &data, const size_t index, const bool eof) {
   cout << "push_substring(): index = " << index << ", eof = " << eof << endl;
-  if (eof) {
+  // update unread & unaccepted when recv new string
+  _first_unread = _output.bytes_read();
+  _first_unaccepted = _first_unread + _capacity;
+  // left - 1 ----> right + 1
+  if (eof && index + data.size() < _first_unaccepted + 1) {
     _is_end = true;
   }
   size_t str_index = getFirstIndex(data, index);
-  cout << "getFirstIndex(): str_index = " << str_index << endl;
-  if (str_index >= data.size()) {
-    cout << "useless segment..." << endl;
-    if (_is_end && empty()) {
-      cout << "push_substring(): ALL BYTES ASSEMBLED" << endl;
-      _output.end_input();
-    }
-    return;
-  }
   loadString(data, index, str_index);
+  reassemble();
 }
 
 //! \brief Get index-in-str of the first (possibly) useful byte
 //! \note return_index is the index inside the input segment, not the entire ByteStream
 size_t StreamReassembler::getFirstIndex(const std::string &data, const uint64_t index) const {
   const uint64_t last_index = index + data.size() - 1;
-  // all useful
+  size_t ans;
+
   if (_first_unassembled <= index) {
-    return 0;
+    // all useful
+    ans = 0;
+  } else if (_first_unassembled > last_index) {
+    // useless
+    ans = data.size();
+  } else {
+    // part useful
+    ans = _first_unassembled - index;
   }
-  // useless
-  if (_first_unassembled > last_index) {
-    return data.size();
-  }
-  // part useful
-  return _first_unassembled - index;
+  cout << "getFirstIndex(): str_index = " << ans << endl;
+  return ans;
 }
 
 //! \brief Load input string into map
@@ -59,49 +59,11 @@ size_t StreamReassembler::getFirstIndex(const std::string &data, const uint64_t 
 void StreamReassembler::loadString(const std::string &data, const uint64_t index, const size_t str_index) {
   // sequential load
   size_t i;
-  for (i = str_index; i < data.size(); ++i) {
-    if (index + i < _first_unassembled)
-      continue;
-    if (full()) {
-      if (empty() || index + i >= _first_unaccepted) {
-        // no space or no need
-        break;
-      }
-      evict();
-    }
+  for (i = str_index; i < data.size() && index + i < _first_unaccepted; ++i) {
     _map.insert_or_assign(index + i, data[i]);
-    _first_unaccepted = max(_first_unaccepted, index + i + 1);
-    reassemble();
   }
-  cout << "loadString(): _first_unaccepted = " << _first_unaccepted
-      << ", _first_unassembled = " << _first_unassembled << endl;
+  cout << "loadString(): _first_unassembled = " << _first_unassembled << endl;
 }
-
-//! \brief evict the last byte, and update _first_unaccepted
-void StreamReassembler::evict() {
-  int i = _first_unaccepted - 1;
-  // find the last byte in _map
-  while (i >= 0 && _map.find(i) == _map.end()) {
-    i--;
-  }
-  // evict
-  cout << "evict(): evict index = " << i << endl;
-  _map.erase(i);
-  // find the last byte in _map
-  while (i >= 0 && _map.find(i) == _map.end()) {
-    i--;
-  }
-  // _first_unaccepted should be the "index of last byte" + 1
-  if (_map.find(i) != _map.end()) {
-    _first_unaccepted = i + 1;
-  } else {
-    _first_unaccepted = 0;
-  }
-  cout << "evict(): done, _first_unaccepted = " << _first_unaccepted
-      << ", map_size = " << _map.size() << endl;
-  _is_end = false;
-}
-
 
 //! \brief push the assembled bytes into the _output ByteStream
 void StreamReassembler::reassemble() {
@@ -124,9 +86,3 @@ void StreamReassembler::reassemble() {
 size_t StreamReassembler::unassembled_bytes() const { return _map.size(); }
 
 bool StreamReassembler::empty() const { return _map.empty(); }
-
-bool StreamReassembler::full() const {
-  size_t m_sz = _map.size();
-  size_t out_sz = _output.buffer_size();
-  return m_sz + out_sz >= _capacity;
-}

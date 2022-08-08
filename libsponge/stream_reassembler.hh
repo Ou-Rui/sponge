@@ -15,10 +15,10 @@ class StreamReassembler {
     // Your code here -- add private members as necessary.
     // key: index; val: byte
     std::unordered_map<size_t, char> _map;
-    size_t _map_size;
     //! \note _first_unassembled/_first_unaccepted must be the index of "non-received" Byte
-    size_t _first_unassembled;
-    size_t _first_unaccepted;
+    uint64_t _first_unread;
+    uint64_t _first_unassembled;
+    uint64_t _first_unaccepted;
     bool _is_end;
 
     ByteStream _output;  //!< The reassembled in-order byte stream
@@ -35,10 +35,6 @@ class StreamReassembler {
 
     //! \brief push the assembled bytes into the _output ByteStream
     void reassemble();
-
-    bool full() const;
-    //! \brief evict the last byte, and update _first_unaccepted
-    void evict();
 
   public:
     //! \brief Construct a `StreamReassembler` that will store up to `capacity` bytes.
@@ -71,6 +67,8 @@ class StreamReassembler {
     //! \brief Is the internal state empty (other than the output stream)?
     //! \returns `true` if no substrings are waiting to be assembled
     bool empty() const;
+
+    uint64_t get_first_unassembled() const { return _first_unassembled; }
 };
 
 #endif  // SPONGE_LIBSPONGE_STREAM_REASSEMBLER_HH
