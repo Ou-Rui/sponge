@@ -9,6 +9,46 @@
 #include <functional>
 #include <queue>
 
+
+class RetxTimer {
+  private:
+    bool _on;
+    unsigned int _rto;
+    // time counter
+    unsigned int _time;
+
+  public:
+
+    RetxTimer(const unsigned int rto): _on(false), _rto(rto), _time(0) {}
+
+    void on() { _on = true; };
+    void off() { _on = false; };
+
+    void reset(const unsigned int rto) {
+      _rto = rto;
+      _time = 0;
+    };
+
+    void push_off() {
+      _rto *= 2;
+      _time = 0;
+    };
+
+    // return true for timeout
+    bool tick(const unsigned int ms) {
+      if (_on) {
+        _time += ms;
+        if (_time >= _rto) {
+          _time = 0;
+          return true;
+        }
+      }
+      return false;
+    };
+};
+
+
+
 //! \brief The "sender" part of a TCP implementation.
 
 //! Accepts a ByteStream, divides it up into segments and sends the
@@ -31,6 +71,16 @@ class TCPSender {
 
     //! the (absolute) sequence number for the next byte to be sent
     uint64_t _next_seqno{0};
+
+    RetxTimer _timer;
+    std::queue<TCPSegment> _outstanding_segments{};
+    unsigned int _cons_retx{0};
+    uint64_t _abs_ackno{0};
+    unsigned int _window_size{1};
+    bool _fin{false};
+
+    void remove_outstanding();
+    TCPSegment make_segment();
 
   public:
     //! Initialize a TCPSender
