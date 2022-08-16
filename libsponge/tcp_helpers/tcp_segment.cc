@@ -43,3 +43,9 @@ BufferList TCPSegment::serialize(const uint32_t datagram_layer_checksum) const {
 
     return ret;
 }
+
+void TCPSegment::print_segment(const std::string& func, const std::string& msg) const {
+  cout << func << "(): " << msg << ", seqno = " << header().seqno << ", size = " << payload().size()
+       << ", ACK = " << header().ack << ", ackno = " << header().ackno << ", win = " << header().win
+       << ", SYN = " << header().syn << ", FIN = " << header().fin << endl;
+}

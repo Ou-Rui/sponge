@@ -21,6 +21,13 @@ class TCPConnection {
     //! in case the remote TCPConnection doesn't know we've received its whole stream?
     bool _linger_after_streams_finish{true};
 
+    size_t _tick_since_last_rx{0};
+
+    void set_ackno_win(TCPSegment &seg) const;
+    void send_segments();
+    void send_rst();
+    void check_clean_shutdown();
+
   public:
     //! \name "Input" interface for the writer
     //!@{
@@ -81,7 +88,9 @@ class TCPConnection {
     //!@}
 
     //! Construct a new connection from a configuration
-    explicit TCPConnection(const TCPConfig &cfg) : _cfg{cfg} {}
+    explicit TCPConnection(const TCPConfig &cfg) : _cfg{cfg} {
+      std::cout << "TCPConnection(): constructor" << std::endl;
+    }
 
     //! \name construction and destruction
     //! moving is allowed; copying is disallowed; default construction not possible

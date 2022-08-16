@@ -2,6 +2,9 @@
 
 ## 更新日志
 
+### 22.08.16
+- Lab4 TCP Connection active_close PASS, passive_close FAILED
+
 ### 22.08.11
 - Lab3 TCP Sender Done
 
