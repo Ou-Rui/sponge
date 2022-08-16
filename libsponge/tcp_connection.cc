@@ -26,14 +26,13 @@ void TCPConnection::set_ackno_win(TCPSegment &seg) const {
 }
 
 void TCPConnection::send_segments() {
-  auto queue = _sender.segments_out();
-  while (!queue.empty()) {
-    TCPSegment seg = queue.front();
+  while (!_sender.segments_out().empty()) {
+    TCPSegment seg = _sender.segments_out().front();
     // set ackno & window_size according to receiver
     set_ackno_win(seg);
     seg.print_segment("TCPConnection::send_segments", "new segment");
     _segments_out.push(seg);
-    queue.pop();
+    _sender.segments_out().pop();
   }
 }
 
@@ -55,13 +54,12 @@ void TCPConnection::check_clean_shutdown() {
     return;
   }
   // Prerequisite 1: inbound stream ended && all reassembled
-  bool pre1 = _receiver.stream_out().input_ended() && _receiver.unassembled_bytes() == 0;
+  bool pre1 = pre1_inbound_eof_and_all_reassembled();
   // Prerequisite 2: outbound stream ended && all data transmitted (including FIN)
   // next_seqno_abs == data_size + 1(SYN) + 1(FIN)
-  bool pre2 = _sender.stream_in().input_ended() && _sender.stream_in().buffer_empty()
-      && _sender.stream_in().bytes_read() + 2 == _sender.next_seqno_absolute();
+  bool pre2 = pre2_outbound_eof_and_all_tx();
   // Prerequisite 3: outbound stream fully ACK
-  bool pre3 = _receiver.ackno() && _receiver.ackno() == _sender.next_seqno();
+  bool pre3 = pre3_outbound_fully_ack();
   // Prerequisite 4: remote peer can be clean shutdown, approximation:
   //    a. no need to linger  OR
   //    b. already linger enough time
@@ -109,6 +107,11 @@ void TCPConnection::segment_received(const TCPSegment &seg) {
   }
   // receiver
   _receiver.segment_received(seg);
+  // passive close
+  if (inbound_stream().eof() && !outbound_stream().eof()) {
+    cout << "TCPConnection::segment_received(): passive close, inbound eof, unbound not eof" << endl;
+    _linger_after_streams_finish = false;
+  }
   // ACK
   if (seg.header().ack) {
     _sender.ack_received(seg.header().ackno, seg.header().win);
@@ -119,6 +122,7 @@ void TCPConnection::segment_received(const TCPSegment &seg) {
     // if _sender has nothing to send, send an empty ACK
     if (_sender.segments_out().empty()) {
       TCPSegment ack_seg;
+      ack_seg.header().seqno = _sender.next_seqno();
       set_ackno_win(ack_seg);
       ack_seg.print_segment("TCPConnection::segment_received", "sender has nothing to send, send an empty ACK..");
       _segments_out.push(ack_seg);
@@ -135,9 +139,18 @@ void TCPConnection::segment_received(const TCPSegment &seg) {
 }
 
 bool TCPConnection::active() const {
-  return (!_sender.stream_in().eof() && !_sender.stream_in().error())
-      || (!_receiver.stream_out().eof() && !_receiver.stream_out().error())
-      || _linger_after_streams_finish;
+  bool pre1 = pre1_inbound_eof_and_all_reassembled();
+  bool pre2 = pre2_outbound_eof_and_all_tx();
+  bool pre3 = pre3_outbound_fully_ack();
+  cout << "TCPConnection::active(): pre1 = " << pre1 << ", pre2 = " << pre2
+      << ", pre3 = " << pre3 << endl;
+
+  bool inbound_done = _receiver.stream_out().error() || pre1;
+  bool outbound_done = _sender.stream_in().error() || (pre2 && pre3);
+  cout << "TCPConnection::active(): inbound_done = " << inbound_done
+       << ", outbound_done = " << outbound_done << endl;
+
+  return !inbound_done || !outbound_done || _linger_after_streams_finish;
 }
 
 size_t TCPConnection::write(const string &data) {
@@ -147,7 +160,7 @@ size_t TCPConnection::write(const string &data) {
   }
 
   size_t size = _sender.stream_in().write(data);
-  cout << "TCPConnection::write(): data = " << data << ", write_size = " << size
+  cout << "TCPConnection::write(): data_size = " << data.size() << ", write_size = " << size
       << ", inbound_size = " << _sender.stream_in().buffer_size() << endl;
 
   _sender.fill_window();
@@ -186,6 +199,12 @@ void TCPConnection::tick(const size_t ms_since_last_tick) {
 void TCPConnection::end_input_stream() {
   cout << "TCPConnection::end_input_stream(): outbound ByteStream ended" << endl;
   _sender.stream_in().end_input();
+
+  if (_receiver.stream_out().eof()) {
+    cout << "TCPConnection::end_input_stream(): inbound already EOF, linger = false" << endl;
+    _linger_after_streams_finish = false;
+  }
+
   _sender.fill_window();
   while (!_sender.segments_out().empty()) {
     TCPSegment seg = _sender.segments_out().front();

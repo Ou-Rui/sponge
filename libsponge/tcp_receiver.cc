@@ -45,7 +45,7 @@ optional<WrappingInt32> TCPReceiver::ackno() const {
     index++;    // FIN occupy one byte
   }
   auto ackno = wrap(index, _isn.value());
-  cout << "TCPReceiver::ackno(): index = " << index << ", ackno = " << ackno << endl;
+//  cout << "TCPReceiver::ackno(): index = " << index << ", ackno = " << ackno << endl;
   return ackno;
 }
 
@@ -53,7 +53,7 @@ size_t TCPReceiver::window_size() const {
   // number of bytes that ByteStream holds (unread)
   uint64_t bs_size = _reassembler.stream_out().buffer_size();
   uint64_t window = _capacity - bs_size;
-  cout << "TCPReceiver::ackno(): bs_size = " << bs_size
-      << ", window = " << window << endl;
+//  cout << "TCPReceiver::window_size(): bs_size = " << bs_size
+//      << ", window = " << window << endl;
   return window;
 }

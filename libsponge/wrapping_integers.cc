@@ -14,10 +14,10 @@ using namespace std;
 //! \param n The input absolute 64-bit sequence number
 //! \param isn The initial sequence number
 WrappingInt32 wrap(uint64_t n, WrappingInt32 isn) {
-  //cout << "wrap(): n = " << n << ", isn = " << isn << endl;
+//  cout << "wrap(): n = " << n << ", isn = " << isn << endl;
   uint64_t max_32 = (1ll << 32);
   uint32_t tmp = n % max_32;
-  //cout << "wrap(): max_32 = " << max_32 << ", tmp = " << tmp << endl;
+//  cout << "wrap(): max_32 = " << max_32 << ", tmp = " << tmp << endl;
   if (tmp < max_32 - isn.raw_value()) {
     return isn + tmp;
   }

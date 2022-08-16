@@ -24,8 +24,8 @@ TCPSender::TCPSender(const size_t capacity, const uint16_t retx_timeout, const s
     , _timer(retx_timeout) {}
 
 uint64_t TCPSender::bytes_in_flight() const {
-  cout << "TCPSender::bytes_in_flight(): _next_seqno = " << _next_seqno
-      << ", ackno = " << _abs_ackno << endl;
+//  cout << "TCPSender::bytes_in_flight(): _next_seqno = " << _next_seqno
+//      << ", ackno = " << _abs_ackno << endl;
   return _next_seqno - _abs_ackno;
 }
 
@@ -154,6 +154,10 @@ void TCPSender::tick(const size_t ms_since_last_tick) {
     }
     seg.print_segment("TCPSender::tick()", "retx segment");
   }
+  if (_next_seqno != 0) {
+    fill_window();
+  }
+
 }
 
 unsigned int TCPSender::consecutive_retransmissions() const { return _cons_retx; }

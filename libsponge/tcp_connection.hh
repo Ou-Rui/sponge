@@ -28,6 +28,20 @@ class TCPConnection {
     void send_rst();
     void check_clean_shutdown();
 
+    ByteStream &outbound_stream() { return _sender.stream_in(); }
+    // Prerequisite 1: inbound stream ended && all reassembled
+    bool pre1_inbound_eof_and_all_reassembled() const {
+      return _receiver.stream_out().input_ended() && _receiver.unassembled_bytes() == 0;
+    }
+    // Prerequisite 2: outbound stream ended && all data transmitted (including FIN)
+    bool pre2_outbound_eof_and_all_tx() const {
+      return _sender.stream_in().eof() && _sender.stream_in().bytes_read() + 2 == _sender.next_seqno_absolute();
+    }
+    // Prerequisite 3: outbound stream fully ACK
+    bool pre3_outbound_fully_ack() const {
+      return _sender.bytes_in_flight() == 0;
+    }
+
   public:
     //! \name "Input" interface for the writer
     //!@{

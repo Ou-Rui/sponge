@@ -20,7 +20,7 @@ StreamReassembler::StreamReassembler(const size_t capacity) :
 //! possibly out-of-order, from the logical stream, and assembles any newly
 //! contiguous substrings and writes them into the output stream in order.
 void StreamReassembler::push_substring(const string &data, const size_t index, const bool eof) {
-  cout << "push_substring(): index = " << index << ", eof = " << eof << endl;
+//  cout << "push_substring(): index = " << index << ", eof = " << eof << endl;
   // update unread & unaccepted when recv new string
   _first_unread = _output.bytes_read();
   _first_unaccepted = _first_unread + _capacity;
@@ -49,7 +49,7 @@ size_t StreamReassembler::getFirstIndex(const std::string &data, const uint64_t 
     // part useful
     ans = _first_unassembled - index;
   }
-  cout << "getFirstIndex(): str_index = " << ans << endl;
+//  cout << "getFirstIndex(): str_index = " << ans << endl;
   return ans;
 }
 
@@ -62,12 +62,12 @@ void StreamReassembler::loadString(const std::string &data, const uint64_t index
   for (i = str_index; i < data.size() && index + i < _first_unaccepted; ++i) {
     _map.insert_or_assign(index + i, data[i]);
   }
-  cout << "loadString(): _first_unassembled = " << _first_unassembled << endl;
+//  cout << "loadString(): _first_unassembled = " << _first_unassembled << endl;
 }
 
 //! \brief push the assembled bytes into the _output ByteStream
 void StreamReassembler::reassemble() {
-  cout << "reassemble(): start map_size = " << _map.size() << endl;
+//  cout << "reassemble(): start map_size = " << _map.size() << endl;
   for (size_t i = _first_unassembled; _map.find(i) != _map.end(); ++i) {
     string str;
     str += _map[i];
@@ -75,10 +75,10 @@ void StreamReassembler::reassemble() {
     _map.erase(i);
     _first_unassembled = i + 1;
   }
-  cout << "reassemble(): end map_size = " << _map.size()
-      << ", _first_unassembled = " << _first_unassembled << endl;
+//  cout << "reassemble(): end map_size = " << _map.size()
+//      << ", _first_unassembled = " << _first_unassembled << endl;
   if (_is_end && empty()) {
-    cout << "reassemble(): ALL BYTES ASSEMBLED" << endl;
+//    cout << "reassemble(): ALL BYTES ASSEMBLED" << endl;
     _output.end_input();
   }
 }
