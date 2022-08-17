@@ -183,6 +183,7 @@ void TCPConnection::tick(const size_t ms_since_last_tick) {
   // check consecutive_retx counter
   if (_sender.consecutive_retransmissions() > TCPConfig::MAX_RETX_ATTEMPTS) {
     send_rst();
+    return;
   }
   // retx outstanding segments
   while (!_sender.segments_out().empty()) {
