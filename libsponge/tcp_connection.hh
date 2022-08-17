@@ -35,6 +35,9 @@ class TCPConnection {
     }
     // Prerequisite 2: outbound stream ended && all data transmitted (including FIN)
     bool pre2_outbound_eof_and_all_tx() const {
+//      std::cout << "pre2_outbound_eof_and_all_tx(): outbound eof = " << _sender.stream_in().eof()
+//          << ", bytes_read = " << _sender.stream_in().bytes_read()
+//          << ", next_seqno_abs = " << _sender.next_seqno_absolute() << std::endl;
       return _sender.stream_in().eof() && _sender.stream_in().bytes_read() + 2 == _sender.next_seqno_absolute();
     }
     // Prerequisite 3: outbound stream fully ACK
@@ -103,7 +106,7 @@ class TCPConnection {
 
     //! Construct a new connection from a configuration
     explicit TCPConnection(const TCPConfig &cfg) : _cfg{cfg} {
-      std::cout << "TCPConnection(): constructor" << std::endl;
+//      std::cout << "TCPConnection(): constructor" << std::endl;
     }
 
     //! \name construction and destruction

@@ -31,11 +31,11 @@ uint64_t TCPSender::bytes_in_flight() const {
 
 void TCPSender::fill_window() {
   unsigned int window_size = _window_size > 0 ? _window_size : 1;
-  cout << "TCPSender::fill_window(): start, _next_seqno = " << _next_seqno
-      << ", _abs_ackno = " << _abs_ackno << ", 'window_size' = " << window_size << endl;
+//  cout << "TCPSender::fill_window(): start, _next_seqno = " << _next_seqno
+//      << ", _abs_ackno = " << _abs_ackno << ", 'window_size' = " << window_size << endl;
 
   if (_fin) {
-    cout << "TCPSender::fill_window(): fin, return" << endl;
+//    cout << "TCPSender::fill_window(): fin, return" << endl;
     return;
   }
 
@@ -45,8 +45,8 @@ void TCPSender::fill_window() {
     TCPSegment seg = make_segment();
 
     if (seg.length_in_sequence_space() == 0) {
-      cout << "TCPSender::fill_window(): stream empty.. _next_seqno = " << _next_seqno
-          << ", _abs_ackno = " << _abs_ackno << ", 'window_size' = " << window_size << endl;
+//      cout << "TCPSender::fill_window(): stream empty.. _next_seqno = " << _next_seqno
+//          << ", _abs_ackno = " << _abs_ackno << ", 'window_size' = " << window_size << endl;
       return;
     }
 
@@ -55,15 +55,15 @@ void TCPSender::fill_window() {
     _segments_out.push(seg);
     _outstanding_segments.push(seg);
     _timer.on();
-    cout << "TCPSender::fill_window(): make one segment, _next_seqno = " << _next_seqno
-        << ", fin = " << seg.header().fin << endl;
+//    cout << "TCPSender::fill_window(): make one segment, _next_seqno = " << _next_seqno
+//        << ", fin = " << seg.header().fin << endl;
     if (seg.header().fin) {
       _fin = true;
       break;
     }
 
   }
-  cout << "TCPSender::fill_window(): done, _next_seqno = " << _next_seqno << endl;
+//  cout << "TCPSender::fill_window(): done, _next_seqno = " << _next_seqno << endl;
 }
 
 TCPSegment TCPSender::make_segment() {
@@ -80,9 +80,9 @@ TCPSegment TCPSender::make_segment() {
   seg.header().fin = _stream.eof() && _stream.input_ended()
       && _next_seqno + seg.payload().size() < right_bound;      // check if still have space in window
 
-  cout << "TCPSender::make_segment(): _next_seqno = " << _next_seqno
-      << ", seqno = " << seg.header().seqno << ", syn = " << seg.header().syn
-      << ", fin = " << seg.header().fin << ", payload_size = " << payload.size() << endl;
+//  cout << "TCPSender::make_segment(): _next_seqno = " << _next_seqno
+//      << ", seqno = " << seg.header().seqno << ", syn = " << seg.header().syn
+//      << ", fin = " << seg.header().fin << ", payload_size = " << payload.size() << endl;
   return seg;
 }
 
@@ -91,13 +91,13 @@ TCPSegment TCPSender::make_segment() {
 void TCPSender::ack_received(const WrappingInt32 ackno, const uint16_t window_size) {
   uint64_t abs_ackno = unwrap(ackno, _isn, _next_seqno);
   if (abs_ackno > _next_seqno) {
-    cout << "TCPSender::ack_received(): ackno beyond next_seqno, ignore.. abs_ackno = " << abs_ackno
-        << ", _next_seqno = " << _next_seqno << endl;
+//    cout << "TCPSender::ack_received(): ackno beyond next_seqno, ignore.. abs_ackno = " << abs_ackno
+//        << ", _next_seqno = " << _next_seqno << endl;
     return;
   }
   if (abs_ackno < _abs_ackno) {
-    cout << "TCPSender::ack_received(): out-of-date ACK.. ignore abs_ackno = " << abs_ackno
-         << ", _abs_ackno = " << _abs_ackno << endl;
+//    cout << "TCPSender::ack_received(): out-of-date ACK.. ignore abs_ackno = " << abs_ackno
+//         << ", _abs_ackno = " << _abs_ackno << endl;
     return;
   }
 
@@ -106,9 +106,9 @@ void TCPSender::ack_received(const WrappingInt32 ackno, const uint16_t window_si
   }
 
   _abs_ackno = abs_ackno;
-  cout << "TCPSender::ack_received(): ackno(Wrapped) = " << ackno
-      << ", _abs_ackno = " << _abs_ackno
-      << ", window_size = " << window_size << endl;
+//  cout << "TCPSender::ack_received(): ackno(Wrapped) = " << ackno
+//      << ", _abs_ackno = " << _abs_ackno
+//      << ", window_size = " << window_size << endl;
 
   _window_size = window_size;     // min_window_size = 1
   _cons_retx = 0;
@@ -124,21 +124,21 @@ void TCPSender::ack_received(const WrappingInt32 ackno, const uint16_t window_si
 }
 
 void TCPSender::remove_outstanding() {
-  cout << "TCPSender::remove_outstanding(): start, size = " << _outstanding_segments.size()
-      << ", _abs_ackno = " << _abs_ackno << endl;
+//  cout << "TCPSender::remove_outstanding(): start, size = " << _outstanding_segments.size()
+//      << ", _abs_ackno = " << _abs_ackno << endl;
   while (!_outstanding_segments.empty()) {
     TCPSegment seg = _outstanding_segments.front();
     uint64_t abs_seqno_seg = unwrap(seg.header().seqno, _isn, _next_seqno);
     uint64_t last_seqno_seg = abs_seqno_seg + seg.length_in_sequence_space();
     if (last_seqno_seg <= _abs_ackno) {
-      cout << "TCPSender::remove_outstanding(): pop one, abs_seqno = " << abs_seqno_seg
-          << ", last_seqno_seg = " << last_seqno_seg << endl;
+//      cout << "TCPSender::remove_outstanding(): pop one, abs_seqno = " << abs_seqno_seg
+//          << ", last_seqno_seg = " << last_seqno_seg << endl;
       _outstanding_segments.pop();
     } else {
       break;
     }
   }
-  cout << "TCPSender::remove_outstanding(): done size = " << _outstanding_segments.size() << endl;
+//  cout << "TCPSender::remove_outstanding(): done size = " << _outstanding_segments.size() << endl;
 }
 
 //! \param[in] ms_since_last_tick the number of milliseconds since the last call to this method
@@ -152,7 +152,7 @@ void TCPSender::tick(const size_t ms_since_last_tick) {
       // double the rto and restart timeout counter
       _timer.push_off();
     }
-    seg.print_segment("TCPSender::tick()", "retx segment");
+//    seg.print_segment("TCPSender::tick()", "retx segment");
   }
   if (_next_seqno != 0) {
     fill_window();
@@ -166,6 +166,6 @@ void TCPSender::send_empty_segment() {
   TCPSegment seg;
   seg.header().seqno = wrap(_next_seqno, _isn);
   _segments_out.push(seg);
-  cout << "TCPSender::send_empty_segment(): _next_seqno = " << _next_seqno
-      << ", seqno = " << seg.header().seqno << endl;
+//  cout << "TCPSender::send_empty_segment(): _next_seqno = " << _next_seqno
+//      << ", seqno = " << seg.header().seqno << endl;
 }

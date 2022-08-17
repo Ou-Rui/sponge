@@ -2,6 +2,9 @@
 
 ## 更新日志
 
+### 22.08.17
+- Lab4 PASS ALL TESTS
+
 ### 22.08.16
 - Lab4 TCP Connection active_close PASS, passive_close FAILED
 

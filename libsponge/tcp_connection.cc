@@ -30,7 +30,7 @@ void TCPConnection::send_segments() {
     TCPSegment seg = _sender.segments_out().front();
     // set ackno & window_size according to receiver
     set_ackno_win(seg);
-    seg.print_segment("TCPConnection::send_segments", "new segment");
+//    seg.print_segment("TCPConnection::send_segments", "new segment");
     _segments_out.push(seg);
     _sender.segments_out().pop();
   }
@@ -48,9 +48,9 @@ void TCPConnection::send_rst() {
 }
 
 void TCPConnection::check_clean_shutdown() {
-  cout << "TCPConnection::check_clean_shutdown(): start" << endl;
+//  cout << "TCPConnection::check_clean_shutdown(): start" << endl;
   if (!active()) {
-    cout << "TCPConnection::check_clean_shutdown(): already shutdown.." << endl;
+//    cout << "TCPConnection::check_clean_shutdown(): already shutdown.." << endl;
     return;
   }
   // Prerequisite 1: inbound stream ended && all reassembled
@@ -64,10 +64,10 @@ void TCPConnection::check_clean_shutdown() {
   //    a. no need to linger  OR
   //    b. already linger enough time
   bool pre4 = !_linger_after_streams_finish || _tick_since_last_rx >= 10 * _cfg.rt_timeout;
-  cout << "TCPConnection::check_clean_shutdown(): pre1 = " << pre1 << ", pre2 = " << pre2
-      << ", pre3 = " << pre3 << ", pre4 = " << pre4 << endl;
+//  cout << "TCPConnection::check_clean_shutdown(): pre1 = " << pre1 << ", pre2 = " << pre2
+//      << ", pre3 = " << pre3 << ", pre4 = " << pre4 << endl;
   if (pre1 && pre2 && pre3 && pre4) {
-    cout << "TCPConnection::check_clean_shutdown(): clean shutdown!" << endl;
+//    cout << "TCPConnection::check_clean_shutdown(): clean shutdown!" << endl;
     _linger_after_streams_finish = false;
   }
 
@@ -92,11 +92,11 @@ size_t TCPConnection::time_since_last_segment_received() const {
 
 void TCPConnection::segment_received(const TCPSegment &seg) {
   if (!active()) {
-    cout << "TCPConnection::segment_received(): not active.." << endl;
+//    cout << "TCPConnection::segment_received(): not active.." << endl;
     return;
   }
 
-  seg.print_segment("TCPConnection::segment_received", "new seg rx");
+//  seg.print_segment("TCPConnection::segment_received", "new seg rx");
   _tick_since_last_rx = 0;
   // RST
   if (seg.header().rst) {
@@ -109,7 +109,7 @@ void TCPConnection::segment_received(const TCPSegment &seg) {
   _receiver.segment_received(seg);
   // passive close
   if (inbound_stream().eof() && !outbound_stream().eof()) {
-    cout << "TCPConnection::segment_received(): passive close, inbound eof, unbound not eof" << endl;
+//    cout << "TCPConnection::segment_received(): passive close, inbound eof, unbound not eof" << endl;
     _linger_after_streams_finish = false;
   }
   // ACK
@@ -124,7 +124,7 @@ void TCPConnection::segment_received(const TCPSegment &seg) {
       TCPSegment ack_seg;
       ack_seg.header().seqno = _sender.next_seqno();
       set_ackno_win(ack_seg);
-      ack_seg.print_segment("TCPConnection::segment_received", "sender has nothing to send, send an empty ACK..");
+//      ack_seg.print_segment("TCPConnection::segment_received", "sender has nothing to send, send an empty ACK..");
       _segments_out.push(ack_seg);
     }
   }
@@ -142,26 +142,26 @@ bool TCPConnection::active() const {
   bool pre1 = pre1_inbound_eof_and_all_reassembled();
   bool pre2 = pre2_outbound_eof_and_all_tx();
   bool pre3 = pre3_outbound_fully_ack();
-  cout << "TCPConnection::active(): pre1 = " << pre1 << ", pre2 = " << pre2
-      << ", pre3 = " << pre3 << endl;
+//  cout << "TCPConnection::active(): pre1 = " << pre1 << ", pre2 = " << pre2
+//      << ", pre3 = " << pre3 << endl;
 
   bool inbound_done = _receiver.stream_out().error() || pre1;
   bool outbound_done = _sender.stream_in().error() || (pre2 && pre3);
-  cout << "TCPConnection::active(): inbound_done = " << inbound_done
-       << ", outbound_done = " << outbound_done << endl;
+//  cout << "TCPConnection::active(): inbound_done = " << inbound_done
+//       << ", outbound_done = " << outbound_done << endl;
 
   return !inbound_done || !outbound_done || _linger_after_streams_finish;
 }
 
 size_t TCPConnection::write(const string &data) {
   if (!active()) {
-    cout << "TCPConnection::write(): not active.." << endl;
+//    cout << "TCPConnection::write(): not active.." << endl;
     return 0;
   }
 
   size_t size = _sender.stream_in().write(data);
-  cout << "TCPConnection::write(): data_size = " << data.size() << ", write_size = " << size
-      << ", inbound_size = " << _sender.stream_in().buffer_size() << endl;
+//  cout << "TCPConnection::write(): data_size = " << data.size() << ", write_size = " << size
+//      << ", inbound_size = " << _sender.stream_in().buffer_size() << endl;
 
   _sender.fill_window();
   send_segments();
@@ -171,9 +171,9 @@ size_t TCPConnection::write(const string &data) {
 
 //! \param[in] ms_since_last_tick number of milliseconds since the last call to this method
 void TCPConnection::tick(const size_t ms_since_last_tick) {
-  cout << "TCPConnection::tick(): tick = " << ms_since_last_tick << "ms" << endl;
+//  cout << "TCPConnection::tick(): tick = " << ms_since_last_tick << "ms" << endl;
   if (!active()) {
-    cout << "TCPConnection::tick(): not active.." << endl;
+//    cout << "TCPConnection::tick(): not active.." << endl;
     return;
   }
 
@@ -190,7 +190,7 @@ void TCPConnection::tick(const size_t ms_since_last_tick) {
     TCPSegment seg = _sender.segments_out().front();
     set_ackno_win(seg);
     _segments_out.push(seg);
-    seg.print_segment("TCPConnection::tick", "retx outstanding segment");
+//    seg.print_segment("TCPConnection::tick", "retx outstanding segment");
     _sender.segments_out().pop();
   }
 
@@ -198,11 +198,11 @@ void TCPConnection::tick(const size_t ms_since_last_tick) {
 }
 
 void TCPConnection::end_input_stream() {
-  cout << "TCPConnection::end_input_stream(): outbound ByteStream ended" << endl;
+//  cout << "TCPConnection::end_input_stream(): outbound ByteStream ended" << endl;
   _sender.stream_in().end_input();
 
   if (_receiver.stream_out().eof()) {
-    cout << "TCPConnection::end_input_stream(): inbound already EOF, linger = false" << endl;
+//    cout << "TCPConnection::end_input_stream(): inbound already EOF, linger = false" << endl;
     _linger_after_streams_finish = false;
   }
 
@@ -211,7 +211,7 @@ void TCPConnection::end_input_stream() {
     TCPSegment seg = _sender.segments_out().front();
     set_ackno_win(seg);
     _segments_out.push(seg);
-    seg.print_segment("TCPConnection::end_input_stream", "send a seg");
+//    seg.print_segment("TCPConnection::end_input_stream", "send a seg");
     _sender.segments_out().pop();
   }
 }
@@ -219,20 +219,20 @@ void TCPConnection::end_input_stream() {
 // send a syn segment
 void TCPConnection::connect() {
   if (!active()) {
-    cout << "TCPConnection::connect(): not active.." << endl;
+//    cout << "TCPConnection::connect(): not active.." << endl;
     return;
   }
 
   _sender.fill_window();
   TCPSegment seg = _sender.segments_out().front();
-  cout << "TCPConnection::connect(): _sender.segments_out().size() = " << _sender.segments_out().size()
-      << ", SYN = " << seg.header().syn << ", ACK = " << seg.header().ack << endl;
+//  cout << "TCPConnection::connect(): _sender.segments_out().size() = " << _sender.segments_out().size()
+//      << ", SYN = " << seg.header().syn << ", ACK = " << seg.header().ack << endl;
   _segments_out.push(seg);
   _sender.segments_out().pop();
 }
 
 TCPConnection::~TCPConnection() {
-  cout << "TCPConnection(): de-constructor" << std::endl;
+//  cout << "TCPConnection(): de-constructor" << std::endl;
   try {
       if (active()) {
         cerr << "Warning: Unclean shutdown of TCPConnection\n";

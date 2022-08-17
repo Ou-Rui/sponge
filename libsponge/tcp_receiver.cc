@@ -14,24 +14,24 @@ void TCPReceiver::segment_received(const TCPSegment &seg) {
   // syn & isn
   if (seg.header().syn) {
     if (_isn != nullopt && seg.header().seqno != _isn) {
-      cout << "TCPReceiver::segment_received(): conflict isn, old = " << _isn.value()
-          << ", new = " << seg.header().seqno << endl;
+//      cout << "TCPReceiver::segment_received(): conflict isn, old = " << _isn.value()
+//          << ", new = " << seg.header().seqno << endl;
       return;
     }
     if (_isn == nullopt) {
       _isn = seg.header().seqno;
-      cout << "TCPReceiver::segment_received(): set isn = " << _isn.value() << endl;
+//      cout << "TCPReceiver::segment_received(): set isn = " << _isn.value() << endl;
     }
   }
   if (_isn == nullopt) {
-    cout << "TCPReceiver::segment_received(): NOT SYN.. return "  << endl;
+//    cout << "TCPReceiver::segment_received(): NOT SYN.. return "  << endl;
     return;
   }
   // checkpoint = first_unassembled index
   uint64_t absolute_seqno = unwrap(seg.header().seqno, _isn.value(), _reassembler.get_first_unassembled());
   uint64_t str_index = seg.header().syn ? 0 : absolute_seqno - 1;
-  cout << "TCPReceiver::segment_received(): abs_seqno = " << absolute_seqno
-      << ", str_index = " << str_index << endl;
+//  cout << "TCPReceiver::segment_received(): abs_seqno = " << absolute_seqno
+//      << ", str_index = " << str_index << endl;
   _reassembler.push_substring(seg.payload().copy(), str_index, seg.header().fin);
 }
 

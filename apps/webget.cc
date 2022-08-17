@@ -25,8 +25,8 @@ void get_URL(const string &host, const string &path) {
         string s = tcp_socket.read();
         cout << s;
     }
+    tcp_socket.wait_until_closed();
     tcp_socket.close();
-  tcp_socket.wait_until_closed();
 }
 
 int main(int argc, char *argv[]) {
