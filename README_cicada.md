@@ -1,6 +1,8 @@
 # CS144 Labs
 
 ## 更新日志
+### 22.08.18
+- Lab1 DS unordered_map<char> --> set<block>
 
 ### 22.08.17
 - Lab4 PASS ALL TESTS

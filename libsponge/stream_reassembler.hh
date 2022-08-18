@@ -5,7 +5,7 @@
 
 #include <cstdint>
 #include <string>
-#include <unordered_map>
+#include <set>
 #include <iostream>
 
 //! \brief A class that assembles a series of excerpts from a byte stream (possibly out of order,
@@ -13,28 +13,27 @@
 class StreamReassembler {
   private:
     // Your code here -- add private members as necessary.
-    // key: index; val: byte
-    std::unordered_map<size_t, char> _map;
+    struct block_t {
+      uint64_t index{0};
+      uint64_t len{0};
+      std::string data = "";
+      bool operator<(const block_t& t) const { return index < t.index; }
+    };
+
+    std::set<block_t> _set{};
+    uint64_t _unassembled_bytes{0};
     //! \note _first_unassembled/_first_unaccepted must be the index of "non-received" Byte
-    uint64_t _first_unread;
-    uint64_t _first_unassembled;
-    uint64_t _first_unaccepted;
-    bool _is_end;
+    uint64_t _first_unread{0};
+    uint64_t _first_unassembled{0};
+    uint64_t _first_unaccepted{0};
+    bool _is_end{false};
 
     ByteStream _output;  //!< The reassembled in-order byte stream
     size_t _capacity;    //!< The maximum number of bytes
 
-    //! \brief Get index-in-str of the first (possibly) useful byte
-    //! \note return_index is the index inside the input segment, not the entire ByteStream
-    size_t getFirstIndex(const std::string &data, const uint64_t index) const;
-
-    //! \brief Load input string into map
-    //! \param str_index: index-in-str of the first (possibly) useful byte
-    //! \return new_first_unassembled index
-    void loadString(const std::string &data, const uint64_t index, const size_t str_index);
-
-    //! \brief push the assembled bytes into the _output ByteStream
-    void reassemble();
+    block_t get_block(const std::string &data, const size_t index) const;
+    //! \brief merge b2 into b1
+    bool merge_block(block_t& b1, const block_t& b2);
 
   public:
     //! \brief Construct a `StreamReassembler` that will store up to `capacity` bytes.
