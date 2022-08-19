@@ -1,6 +1,8 @@
 #ifndef SPONGE_LIBSPONGE_BYTE_STREAM_HH
 #define SPONGE_LIBSPONGE_BYTE_STREAM_HH
 
+#include "util/buffer.hh"
+
 #include <queue>
 #include <string>
 
@@ -17,13 +19,13 @@ class ByteStream {
     // all, but if any of your tests are taking longer than a second,
     // that's a sign that you probably want to keep exploring
     // different approaches.
-    std::deque<char> _queue;
+    BufferList _buffers{};
     size_t _capacity;
-    uint32_t _w_cnt;
-    uint32_t _r_cnt;
-    bool _end;
+    uint32_t _w_cnt{0};
+    uint32_t _r_cnt{0};
+    bool _end{false};
 
-    bool _error{};  //!< Flag indicating that the stream suffered an error.
+    bool _error{false};  //!< Flag indicating that the stream suffered an error.
 
   public:
     //! Construct a stream with room for `capacity` bytes.
