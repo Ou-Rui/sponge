@@ -4,6 +4,7 @@
 #include "ethernet_frame.hh"
 #include "tcp_over_ip.hh"
 #include "tun.hh"
+#include "arp_message.hh"
 
 #include <optional>
 #include <queue>
@@ -31,6 +32,8 @@
 //! and learns or replies as necessary.
 class NetworkInterface {
   private:
+    const uint32_t CACHE_TTL = 30 * 1000;
+    const uint32_t ARP_RETX_TIME = 5 * 1000;
     //! Ethernet (known as hardware, network-access-layer, or link-layer) address of the interface
     EthernetAddress _ethernet_address;
 
@@ -39,6 +42,28 @@ class NetworkInterface {
 
     //! outbound queue of Ethernet frames that the NetworkInterface wants sent
     std::queue<EthernetFrame> _frames_out{};
+
+    // code here
+    struct mac {
+      EthernetAddress addr;
+      uint64_t ttl;
+    };
+    struct item {
+      EthernetFrame frame;
+      uint32_t dst_ip;
+    };
+    std::unordered_map<uint32_t, mac> _map{};
+    uint64_t _timer{0};
+    std::queue<item> _waiting_queue{};
+    // ARP Request queue, IP address
+    std::queue<uint32_t> _arp_queue{};
+    uint64_t _arp_timer{ARP_RETX_TIME};
+
+    void _send_arp_request();
+
+    bool _mac_equal(const EthernetAddress& addr1, const EthernetAddress& addr2) const;
+
+    void _recv_arp_handler(const ARPMessage& msg);
 
   public:
     //! \brief Construct a network interface with given Ethernet (network-access-layer) and IP (internet-layer) addresses
