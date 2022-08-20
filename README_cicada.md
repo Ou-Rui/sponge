@@ -4,6 +4,7 @@
 
 ### 22.08.20
 - Lab5 PASS
+- Lab6 PASS
 
 ### 22.08.19
 - Lab0 deque<char> -> BufferList
